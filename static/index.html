@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: sans-serif;
+      background: #1a1a2e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .calc {
+      background: #16213e;
+      border-radius: 20px;
+      padding: 24px;
+      width: 320px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .pantalla {
+      background: #0f3460;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: right;
+      color: white;
+      font-size: 2rem;
+      min-height: 64px;
+      word-break: break-all;
+    }
+    .inputs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #0f3460;
+      color: white;
+      font-size: 1.1rem;
+      text-align: center;
+      width: 100%;
+    }
+    input::placeholder { color: #888; }
+    .botones {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    button {
+      padding: 18px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      background: #e94560;
+      color: white;
+      transition: opacity 0.2s;
+    }
+    button:active { opacity: 0.7; }
+    .estado {
+      margin-top: 16px;
+      text-align: center;
+      color: #aaa;
+      font-size: 0.85rem;
+      min-height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="calc">
+    <div class="pantalla" id="pantalla">—</div>
+    <div class="inputs">
+      <input type="number" id="n1" placeholder="Núm. 1">
+      <input type="number" id="n2" placeholder="Núm. 2">
+    </div>
+    <div class="botones">
+      <button onclick="calcular('suma')">+</button>
+      <button onclick="calcular('resta')">−</button>
+      <button onclick="calcular('multiplicacion')">×</button>
+      <button onclick="calcular('division')">÷</button>
+    </div>
+    <div class="estado" id="estado"></div>
+  </div>
+
+  <script>
+    async function calcular(operacion) {
+      const a = document.getElementById('n1').value;
+      const b = document.getElementById('n2').value;
+      const estado = document.getElementById('estado');
+      const pantalla = document.getElementById('pantalla');
+
+      if (a === '' || b === '') {
+        estado.textContent = 'Ingresa ambos números';
+        return;
+      }
+
+      estado.textContent = 'Calculando...';
+
+      try {
+        const resp = await fetch('/calcular', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ a: parseFloat(a), b: parseFloat(b), operacion })
+        });
+        const data = await resp.json();
+        if (data.resultado !== undefined) {
+          pantalla.textContent = data.resultado;
+          estado.textContent = '';
+        } else {
+          pantalla.textContent = '⚠️';
+          estado.textContent = data.error;
+        }
+      } catch (e) {
+        estado.textContent = 'Error de conexión';
+      }
+    }
+  </script>
+</body>
+</html>
